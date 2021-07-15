@@ -598,14 +598,14 @@ notMember k m = not $ member k m
 lookup :: Key -> IntMap a -> Maybe a
 lookup !k = go
   where
-    go (Bin p m l r) | let k' = natFromInt k
+    k' = natFromInt k
+    go (Bin p m l r) = let p' = natFromInt p
                            m' = natFromInt m
-                           p' = natFromInt p
-                       in nomatch' k' p' m' = Nothing
-                     | let k' = natFromInt k
-                           m' = natFromInt m
-                        in zero' k' m'  = go l
-                     | otherwise = go r
+                        in if zero' k' m'
+                           then go l
+                           else if nomatch' k' p' m'
+                                then Nothing
+                                else go r
     go (Tip kx x) | k == kx   = Just x
                   | otherwise = Nothing
     go Nil = Nothing
@@ -3449,8 +3449,7 @@ nomatch i p m
 {-# INLINE nomatch #-}
 
 nomatch' :: Nat -> Nat -> Nat -> Bool
-nomatch' i p m
-  = (mask' i m) /= p
+nomatch' i p m = (mask' i m) /= p
 {-# INLINE nomatch' #-}
 
 -- | Does the key @i@ match the prefix @p@ (up to but not including
