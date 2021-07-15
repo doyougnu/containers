@@ -598,8 +598,13 @@ notMember k m = not $ member k m
 lookup :: Key -> IntMap a -> Maybe a
 lookup !k = go
   where
-    go (Bin p m l r) | nomatch k p m = Nothing
-                     | zero k m  = go l
+    go (Bin p m l r) | let k' = natFromInt k
+                           m' = natFromInt m
+                           p' = natFromInt p
+                       in nomatch' k' p' m' = Nothing
+                     | let k' = natFromInt k
+                           m' = natFromInt m
+                        in zero' k' m'  = go l
                      | otherwise = go r
     go (Tip kx x) | k == kx   = Just x
                   | otherwise = Nothing
@@ -3431,6 +3436,10 @@ zero i m
   = (natFromInt i) .&. (natFromInt m) == 0
 {-# INLINE zero #-}
 
+zero' :: Nat -> Nat -> Bool
+zero' i m = i .&. m == 0
+{-# INLINE zero' #-}
+
 nomatch,match :: Key -> Prefix -> Mask -> Bool
 
 -- | Does the key @i@ differ from the prefix @p@ before getting to
@@ -3438,6 +3447,11 @@ nomatch,match :: Key -> Prefix -> Mask -> Bool
 nomatch i p m
   = (mask i m) /= p
 {-# INLINE nomatch #-}
+
+nomatch' :: Nat -> Nat -> Nat -> Bool
+nomatch' i p m
+  = (mask' i m) /= p
+{-# INLINE nomatch' #-}
 
 -- | Does the key @i@ match the prefix @p@ (up to but not including
 -- bit @m@)?
@@ -3453,6 +3467,10 @@ mask i m
   = maskW (natFromInt i) (natFromInt m)
 {-# INLINE mask #-}
 
+mask' :: Nat -> Nat -> Nat
+mask' = maskW'
+{-# INLINE mask' #-}
+
 
 {--------------------------------------------------------------------
   Big endian operations
@@ -3464,6 +3482,11 @@ maskW :: Nat -> Nat -> Prefix
 maskW i m
   = intFromNat (i .&. ((-m) `xor` m))
 {-# INLINE maskW #-}
+
+maskW' :: Nat -> Nat -> Nat
+maskW' i m
+  = (i .&. ((-m) `xor` m))
+{-# INLINE maskW' #-}
 
 -- | Does the left switching bit specify a shorter prefix?
 shorter :: Mask -> Mask -> Bool
