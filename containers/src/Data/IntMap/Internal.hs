@@ -595,21 +595,30 @@ notMember k m = not $ member k m
 -- | /O(min(n,W))/. Lookup the value at a key in the map. See also 'Data.Map.lookup'.
 
 -- See Note: Local 'go' functions and capturing]
+-- lookup :: Key -> IntMap a -> Maybe a
+-- lookup !k (Bin p m l r) | nomatchNat k' p' m' = Nothing
+--                         | zeroNat k' m'       = lookup k l
+--                         | otherwise           = lookup k r
+--   where
+--     p' = natFromInt p
+--     m' = natFromInt m
+--     k' = natFromInt k
+-- lookup !k (Tip kx x) | k == kx   = Just x
+--                      | otherwise = Nothing
+-- lookup _  Nil                    = Nothing
+
 lookup :: Key -> IntMap a -> Maybe a
 lookup !k = go
   where
     k' = natFromInt k
-    go (Bin p m l r) = let p' = natFromInt p
-                           m' = natFromInt m
-                        in if zero' k' m'
-                           then go l
-                           else if nomatch' k' p' m'
-                                then Nothing
-                                else go r
+    go (Bin p m l r)  | nomatchNat k' p' m' = Nothing
+                      | zeroNat    k' m'    = go l
+                      | otherwise           = go r
+      where p' = natFromInt p
+            m' = natFromInt m
     go (Tip kx x) | k == kx   = Just x
-                  | otherwise = Nothing
+                     | otherwise = Nothing
     go Nil = Nothing
-
 
 -- See Note: Local 'go' functions and capturing]
 find :: Key -> IntMap a -> a
@@ -3436,9 +3445,9 @@ zero i m
   = (natFromInt i) .&. (natFromInt m) == 0
 {-# INLINE zero #-}
 
-zero' :: Nat -> Nat -> Bool
-zero' i m = i .&. m == 0
-{-# INLINE zero' #-}
+zeroNat :: Nat -> Nat -> Bool
+zeroNat i m = i .&. m == 0
+{-# INLINE zeroNat #-}
 
 nomatch,match :: Key -> Prefix -> Mask -> Bool
 
@@ -3448,9 +3457,9 @@ nomatch i p m
   = (mask i m) /= p
 {-# INLINE nomatch #-}
 
-nomatch' :: Nat -> Nat -> Nat -> Bool
-nomatch' i p m = (mask' i m) /= p
-{-# INLINE nomatch' #-}
+nomatchNat :: Nat -> Nat -> Nat -> Bool
+nomatchNat i p m = (maskNat i m) /= p
+{-# INLINE nomatchNat #-}
 
 -- | Does the key @i@ match the prefix @p@ (up to but not including
 -- bit @m@)?
@@ -3466,9 +3475,9 @@ mask i m
   = maskW (natFromInt i) (natFromInt m)
 {-# INLINE mask #-}
 
-mask' :: Nat -> Nat -> Nat
-mask' = maskW'
-{-# INLINE mask' #-}
+maskNat :: Nat -> Nat -> Nat
+maskNat = maskWNat
+{-# INLINE maskNat #-}
 
 
 {--------------------------------------------------------------------
@@ -3482,10 +3491,10 @@ maskW i m
   = intFromNat (i .&. ((-m) `xor` m))
 {-# INLINE maskW #-}
 
-maskW' :: Nat -> Nat -> Nat
-maskW' i m
-  = (i .&. ((-m) `xor` m))
-{-# INLINE maskW' #-}
+maskWNat :: Nat -> Nat -> Nat
+maskWNat i m
+  = (i .&. ((0 - m) `xor` m))
+{-# INLINE maskWNat #-}
 
 -- | Does the left switching bit specify a shorter prefix?
 shorter :: Mask -> Mask -> Bool
