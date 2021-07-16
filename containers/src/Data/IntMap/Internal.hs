@@ -610,12 +610,12 @@ notMember k m = not $ member k m
 lookup :: Key -> IntMap a -> Maybe a
 lookup !k = go
   where
-    k' = natFromInt k
     go (Bin p m l r)  | nomatchNat k' p' m' = Nothing
                       | zeroNat    k' m'    = go l
                       | otherwise           = go r
       where p' = natFromInt p
             m' = natFromInt m
+            k' = natFromInt k
     go (Tip kx x) | k == kx   = Just x
                      | otherwise = Nothing
     go Nil = Nothing
