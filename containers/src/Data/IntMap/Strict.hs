@@ -127,6 +127,7 @@ module Data.IntMap.Strict (
     -- * Query
     -- ** Lookup
     , lookup
+    , lookupNat
     , (!?)
     , (!)
     , findWithDefault

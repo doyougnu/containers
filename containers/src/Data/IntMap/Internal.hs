@@ -86,6 +86,7 @@ module Data.IntMap.Internal (
     , member
     , notMember
     , lookup
+    , lookupNat
     , findWithDefault
     , lookupLT
     , lookupGT
@@ -595,20 +596,18 @@ notMember k m = not $ member k m
 -- | /O(min(n,W))/. Lookup the value at a key in the map. See also 'Data.Map.lookup'.
 
 -- See Note: Local 'go' functions and capturing]
--- lookup :: Key -> IntMap a -> Maybe a
--- lookup !k (Bin p m l r) | nomatchNat k' p' m' = Nothing
---                         | zeroNat k' m'       = lookup k l
---                         | otherwise           = lookup k r
---   where
---     p' = natFromInt p
---     m' = natFromInt m
---     k' = natFromInt k
--- lookup !k (Tip kx x) | k == kx   = Just x
---                      | otherwise = Nothing
--- lookup _  Nil                    = Nothing
-
 lookup :: Key -> IntMap a -> Maybe a
 lookup !k = go
+  where
+    go (Bin p m l r) | nomatch k p m = Nothing
+                     | zero k m  = go l
+                     | otherwise = go r
+    go (Tip kx x) | k == kx   = Just x
+                  | otherwise = Nothing
+    go Nil = Nothing
+
+lookupNat :: Key -> IntMap a -> Maybe a
+lookupNat !k = go
   where
     go (Bin p m l r) | nomatchNat k' (natFromInt p) m' = Nothing
                      | zeroNat    k' m'    = go l

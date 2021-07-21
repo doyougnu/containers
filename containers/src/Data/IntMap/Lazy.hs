@@ -108,6 +108,7 @@ module Data.IntMap.Lazy (
     -- * Query
     -- ** Lookup
     , IM.lookup
+    , IM.lookupNat
     , (!?)
     , (!)
     , findWithDefault

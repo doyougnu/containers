@@ -127,6 +127,7 @@ module Data.IntMap.Strict.Internal (
     -- * Query
     -- ** Lookup
     , lookup
+    , lookupNat
     , (!?)
     , (!)
     , findWithDefault
@@ -309,6 +310,7 @@ import Data.IntMap.Internal
   , isSubmapOf
   , isSubmapOfBy
   , lookup
+  , lookupNat
   , lookupLE
   , lookupGE
   , lookupLT
