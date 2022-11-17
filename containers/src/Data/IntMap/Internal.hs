@@ -569,15 +569,18 @@ notMember k m = not $ member k m
 
 -- | \(O(\min(n,W))\). Lookup the value at a key in the map. See also 'Data.Map.lookup'.
 
--- See Note: Local 'go' functions and capturing
+-- See Note: Local 'go' functions and capturing. We run an initial check to
+-- inspect for an empty map which is a common case. Then exploit that fact to
+-- reduce the possible pattern matches
 lookup :: Key -> IntMap a -> Maybe a
-lookup !k = go
-  where
-    go (Bin _p m l r) | zero k m  = go l
-                      | otherwise = go r
-    go (Tip kx x) | k == kx   = Just x
-                  | otherwise = Nothing
-    go Nil = Nothing
+lookup !k im = check
+  where check   | null im = Nothing
+                | otherwise = go im
+
+        go (Bin _p m l r) | zero k m  = go l
+                          | otherwise = go r
+        go (Tip kx x) | k == kx   = Just x
+                      | otherwise = Nothing
 
 -- See Note: Local 'go' functions and capturing]
 find :: Key -> IntMap a -> a

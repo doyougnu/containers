@@ -69,7 +69,7 @@ library
 
   include-dirs:     include
   hs-source-dirs:   src, tests
-  ghc-options:      -O2 -Wall
+  ghc-options:      -O2 -fwarn-incomplete-uni-patterns
   other-extensions:
     BangPatterns
     CPP
@@ -134,7 +134,7 @@ benchmark intmap-benchmarks
   type:           exitcode-stdio-1.0
   hs-source-dirs: benchmarks
   main-is:        IntMap.hs
-  ghc-options:    -O2
+  ghc-options:    -O2 -fwarn-incomplete-uni-patterns
 
 benchmark intset-benchmarks
   import: benchmark-deps
