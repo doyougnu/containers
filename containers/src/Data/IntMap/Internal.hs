@@ -574,13 +574,15 @@ notMember k m = not $ member k m
 -- reduce the possible pattern matches
 lookup :: Key -> IntMap a -> Maybe a
 lookup !k im = check
-  where check   | null im = Nothing
-                | otherwise = go im
+  where check | null im   = Nothing
+              | otherwise = go im
 
         go (Bin _p m l r) | zero k m  = go l
                           | otherwise = go r
         go (Tip kx x) | k == kx   = Just x
                       | otherwise = Nothing
+        go _ = error "impossible"
+
 
 -- See Note: Local 'go' functions and capturing]
 find :: Key -> IntMap a -> a
